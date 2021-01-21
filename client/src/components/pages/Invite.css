@@ -1,0 +1,40 @@
+.long-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    top: var(--l);
+    width: 75%;
+    padding-left: var(--l);
+    margin-left: var(--l);
+    margin-right: var(--l);
+    height: 64px;
+    background-color: var(--blue);
+    border-radius: 24px;
+}
+
+.NewPostInput-input,
+.NewPostInput-button {
+    font-size: 14px;
+    padding: var(--s) var(--m);
+    height: 12px;
+    border-radius: 12px;
+    border: 0;
+    margin: 16px;
+}
+
+.input-question {
+    font-size: 14px;
+    color: var(--light);
+    margin: 16px;
+}
+
+.invite-button {
+    background-color: var(--pink);
+    border: 0;
+    height: 24px;
+    font-size: 14px;
+    border-radius: 12px;
+    color: var(--light);
+    transition: color 0.1s, background 0.1s;
+  }

@@ -1,0 +1,39 @@
+.long-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    top: var(--l);
+    width: 75%;
+    margin: var(--m);
+    height: 64px;
+    background-color: var(--blue);
+    border-radius: 24px;
+}
+
+.Notification-text {
+    font-size: 20px;
+    color: var(--light);
+    margin: 16px;
+}
+
+.Notification-button {
+    font-size: 14px;
+    color: var(--light);
+    margin: 16px;
+    border: 0;
+    height: 28px;
+    width: 100px;
+    font-size: 20px;
+    border-radius: 12px;
+    color: var(--light);
+    transition: color 0.1s, background 0.1s;
+}
+
+.Accept-button {
+    background-color: var(--green);
+}
+.Reject-button {
+    background-color: var(--pink);
+}

@@ -1,0 +1,35 @@
+.NavBar-container {
+    padding: var(--s) var(--m);
+    background-color: var(--pink);
+  }
+
+  .NavBar-title {
+    color: var(--light);
+    font-size: 20px;
+  }
+  
+  .NavBar-linkContainer {
+    margin-left: var(--l);
+    margin-right: var(--l);
+  }
+  
+  .NavBar-link,
+  .NavBar-link:visited {
+    color: var(--white);
+    opacity: 0.6;
+    text-decoration: none;
+    margin-left: var(--l);
+    margin-right: var(--l);
+  }
+  
+  .NavBar-link:hover {
+    opacity: 0.8;
+  }
+  
+  .NavBar-link.NavBar-login {
+    opacity: 1;
+  }
+  
+  .NavBar-link + .NavBar-link {
+    margin-left: var(--m);
+  }
