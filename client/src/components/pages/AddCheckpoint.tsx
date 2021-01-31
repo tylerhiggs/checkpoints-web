@@ -1,44 +1,69 @@
 import React, { Component } from "react";
 import { RouteComponentProps, LocationProvider } from "@reach/router";
 import "./AddCheckpoint.css";
+import { socket } from "../../client-socket";
 
 import { get, post } from "../../utilities";
+
+
 
 type Props = {
     userId: String;
 }
 
-type Location = {
-    name: String, 
+type Locations = {
+    name: string, 
     lat: Number, 
     lon: Number
 }[];
 
 type State = {
-    checkpoints: Location;
+    checkpoints: Locations;
     nameValue: string;
-    latValue: string;
-    lonValue: string;
+    addressValue: string;
+    gotCheckpoints: boolean;
 }
 
 class AddCheckpoint extends Component<Props & RouteComponentProps, State> {
+
+    _isMounted = false;
+
     constructor(props) {
         super(props);
         this.state = {
             checkpoints: [],
             nameValue: "",
-            latValue: "",
-            lonValue: "",
+            addressValue: "",
+            gotCheckpoints: false,
         };
     }
 
     componentDidMount() {
+
+        this._isMounted = true;
+        this.setState({
+            gotCheckpoints: false,
+        });
+
+        // geocoder stuff
+
+
         if (this.props.userId) {
-            get("/api/checkpoints", {id:this.props.userId}).then((points: Location) => {
-                this.setState({checkpoints: points});
+            get("/api/checkpoints", {id:this.props.userId}).then((points: Locations) => {
+                this.setState({checkpoints: points, gotCheckpoints: true});
             });
         }
+        socket.on("checkpoints", (c: Locations) => {
+            if (this._isMounted) {
+                this.setState({
+                    checkpoints: c,
+                });
+            }
+        });
+    }
 
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     handleNameChange = (event) => {
@@ -46,22 +71,38 @@ class AddCheckpoint extends Component<Props & RouteComponentProps, State> {
             nameValue: event.target.value,
         });
     }
-    handleLatChange = (event) => {
+    handleAddressChange = (event) => {
         this.setState({
-            latValue: event.target.value,
-        });    
-    }
-    handleLonChange = (event) => {
-        this.setState({
-            lonValue: event.target.value,
+            addressValue: event.target.value,
         });    
     }
     handleSubmit = (event) => {
         event.preventDefault();
-        post("/api/addCheckpoint", {id:this.props.userId, lat: this.state.latValue, lon: this.state.lonValue, name: this.state.nameValue});
+
+        get("https://api.geocod.io/v1.6/geocode", {api_key: "16a67431190b5404030104976e9e101e5435947", q: this.state.addressValue, limit: 1}).then((res) => {
+            let lat = Number(res.results[0].location.lat);
+            let lon = Number(res.results[0].location.lng);
+            // remember to catch errors on this
+            post("/api/addCheckpoint", {id:this.props.userId, lat: lat, lon: lon, name: this.state.nameValue});
+
+            this.setState({
+                checkpoints: this.state.checkpoints.concat([{name: this.state.nameValue, lat: lat, lon: lon}]),
+                nameValue: "",
+                addressValue: "",
+            });
+        });
     }
 
     render() {
+
+        if ( ! this.state.gotCheckpoints) {
+            if (this.props.userId) {
+                get("/api/checkpoints", {id:this.props.userId}).then((points: Locations) => {
+                    this.setState({checkpoints: points, gotCheckpoints: true});
+                });
+            }
+        }
+
         let inputBox = (
             <div className="long-box">
                 <input
@@ -73,17 +114,10 @@ class AddCheckpoint extends Component<Props & RouteComponentProps, State> {
                 />
                 <input
                     type="text"
-                    placeholder="Lat"
-                    value={this.state.latValue}
-                    onChange={this.handleLatChange}
-                    className="field"
-                />
-                <input
-                    type="text"
-                    placeholder="Lon"
-                    value={this.state.lonValue}
-                    onChange={this.handleLonChange}
-                    className="field"
+                    placeholder="Address"
+                    value={this.state.addressValue}
+                    onChange={this.handleAddressChange}
+                    className="field address-field"
                 />
                 <button 
                     type="submit"

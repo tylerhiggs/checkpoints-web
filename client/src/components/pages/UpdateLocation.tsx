@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { RouteComponentProps } from "@reach/router";
 import "./AddCheckpoint.css"
+import User from '../../../../shared/User';
 
 import { post } from "../../utilities";
 
@@ -21,6 +22,8 @@ class UpdateLocation extends Component<Props & RouteComponentProps, State> {
             lonValue: "",
         };
     }
+
+
 
     handleLatChange = (event) => {
         this.setState({

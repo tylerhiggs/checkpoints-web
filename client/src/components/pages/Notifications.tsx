@@ -3,6 +3,7 @@ import { RouteComponentProps } from "@reach/router";
 import Notification from "../modules/Notification"
 import { get, post } from "../../utilities";
 import User from "../../../../shared/User";
+import { socket } from "../../client-socket";
 
 
 type Props = {
@@ -10,59 +11,82 @@ type Props = {
 }
 
 type State = {
-    notifications: String[];
-    users: User[];
+    notifications: Note[];
+    gotNotifications: boolean;
     show: String;
 }
 
+type Note = {
+    senderId: string,
+    senderName: string,
+};
+
 class Notifications extends Component<Props & RouteComponentProps, State> {
+
+    _isMounted = false;
+
     constructor(props) {
         super(props);
         this.state = {
             notifications: [],
-            users: [],
+            gotNotifications: false,
             show: "No notifications to show",
         };
     }
 
     componentDidMount() {
+        this._isMounted = true;
+        
         this.reload();
+        socket.on("notifications", (notes: Note[]) => {
+            if (this._isMounted) {
+                this.setState({
+                    notifications: notes,
+                });
+            }
+        });
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     reload() {
         if (this.props.userId) {
             get("/api/notifications", {id: this.props.userId}).then((fetchedNotifications) => {
-                this.setState({notifications: fetchedNotifications});
-                this.getUsers();
+                this.setState({notifications: fetchedNotifications, gotNotifications: true});
             }, (error) => {
                 console.log(error);
             });
         }
     }
 
-
-    getUsers() {
-        if (this.props.userId) {
-            for (let i = 0; i < this.state.notifications.length;i++) {
-                get("/api/user", {id: this.state.notifications[i]}).then((user) => {
-                    this.setState({users: this.state.users.concat([user])});
-                    this.setState({show: "something more"});
-                }, (error) => {
-                    console.log(error);
-                    this.setState({show: error});
-                });
+    deleteNotification(senderId: string) {
+        console.log("deleting notification")
+        let notes = [];
+        for (let i = 0; i < this.state.notifications.length; i++) {
+            if (this.state.notifications[i].senderId !== senderId) {
+                notes.push(this.state.notifications[i]);
             }
         }
+        this.setState({
+            notifications: notes,
+            gotNotifications: false
+        });
     }
 
     render() {
-        var available = this.state.users.length !== 0;
-        var notificationhtml = this.state.users.map((element) => (
+        if ( ! this.state.gotNotifications) {
+            this.reload();
+        }
+        var available = this.state.notifications.length !== 0;
+        var notificationhtml = this.state.notifications.map((element: Note) => (
             <Notification 
                 userId={this.props.userId} 
-                title={`${element.name} invited you to join their family`} 
-                senderUserId={element._id} 
+                title={`${element.senderName} invited you to join their family`} 
+                senderUserId={element.senderId} 
                 reload={this.reload}
+                deleteNote={this.deleteNotification}
             />
         ));
 

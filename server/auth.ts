@@ -1,12 +1,13 @@
 import { OAuth2Client, TokenPayload } from "google-auth-library";
 import { NextFunction, Request, Response } from "express";
-import User from "./models/User";
-import Family from "./models/Family";
+import UserModel, { User } from "./models/User";
+import FamilyModel, { Family } from "./models/Family";
 import UserInterface from "../shared/User";
 
 // create a new OAuth client used to verify google sign-in
 //    TODO: replace with your own CLIENT_ID
 const CLIENT_ID = "542548052137-v350l0as3eh874cl00mcqu08n1a0b8po.apps.googleusercontent.com";
+const CLIENT_ID2 = "542548052137-83gi15re56h4el48v4mjc6qc4oh8sg4j.apps.googleusercontent.com";
 const client = new OAuth2Client(CLIENT_ID);
 
 const verify = (token: string) => {
@@ -18,11 +19,19 @@ const verify = (token: string) => {
     .then((ticket) => ticket.getPayload());
 };
 
+const verifyMobile = (token: string) => {
+  return client
+    .verifyIdToken({
+      idToken: token,
+      audience: CLIENT_ID2,
+    })
+    .then((ticket) => ticket.getPayload());
+};
 const getOrCreateUser = (user: TokenPayload) => {
-  return User.findOne({ googleid: user.sub }).then(
+  return UserModel.findOne({ googleid: user.sub }).then(
     (existingUser: UserInterface | null | undefined) => {
       if (existingUser !== null && existingUser !== undefined) return existingUser;
-      const newUser = new User({
+      const newUser = new UserModel({
         name: user.name,
         googleid: user.sub,
         email: user.email,
@@ -30,6 +39,14 @@ const getOrCreateUser = (user: TokenPayload) => {
         notifications: [],
         lastLocation: {lat:"0",lon:"0"},
       });
+      let newFamily = new FamilyModel({
+        familyId: <string>newUser._id,
+        ids: [newUser._id],
+        locations: [],
+        feed: []
+      });
+      newUser.familyId = <string>newFamily.familyId;
+      newFamily.save();
       return newUser.save();
     }
   );
@@ -54,6 +71,25 @@ const login = (req: Request, res: Response) => {
     });
 };
 
+const loginMobile = (req: Request, res: Response) => {
+  verifyMobile(req.body.token)
+    .then((user) => {
+      if (user === undefined) return;
+      return getOrCreateUser(user);
+    })
+    .then((user) => {
+      if (user === null || user === undefined) {
+        throw new Error("Unable to retrieve user.");
+      }
+      req.session.user = user;
+      res.send(user);
+    })
+    .catch((err) => {
+      console.log(`Failed to login: ${err}`);
+      res.status(401).send("This didnt log in right but at least it called the function");
+    });
+};
+
 const logout = (req: Request, res: Response) => {
   req.session.user = undefined;
   res.send({});
@@ -72,9 +108,28 @@ const ensureLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+/**
+ * 
+ * @param familyId what do you want to call the family
+ * @param user user to start family
+ * 
+ * PLEASE CALL family.save() AFTER CALLING createFamily()!!!!
+ */
+const createFamily = (familyId: string, user: User) => {
+  let newFamily = new FamilyModel({
+    familyId: familyId,
+    ids: [familyId],
+    locations: [],
+    feed: []
+  });
+  user.familyId = <string>newFamily.familyId;
+  return newFamily;
+}
+
 export default {
   ensureLoggedIn,
   populateCurrentUser,
   login,
+  loginMobile,
   logout,
 };

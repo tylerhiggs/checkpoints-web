@@ -7,16 +7,19 @@ import Invite from './pages/Invite';
 import Notifications from './pages/Notifications';
 import AddCheckpoint from './pages/AddCheckpoint';
 import UpdateLocation from './pages/UpdateLocation';
-import Skeleton from './pages/Skeleton';
 import { GoogleLoginResponse } from 'react-google-login';
 import { socket } from '../client-socket';
 import User from '../../../shared/User';
 import "../utilities.css";
 import NavBar from "./modules/NavBar";
 
+
+
 type State = {
   userId: String,
 }
+
+
 
 class App extends Component<{}, State> {
   constructor(props) {
@@ -44,6 +47,7 @@ class App extends Component<{}, State> {
     post("/api/login", { token: userToken }).then((user: User) => {
       this.setState({ userId: user._id });
     });
+    
   };
 
   handleLogout = () => {
@@ -62,7 +66,7 @@ class App extends Component<{}, State> {
           userId={this.state.userId}
         />
         <Router>
-          <Feed path="/" userId={this.state.userId}/>
+          <Feed path="/" userId={this.state.userId} />
           <Invite path="/invite" userId={this.state.userId}/>
           <Notifications path="/notifications" userId={this.state.userId} />
           <AddCheckpoint path="/add-checkpoint" userId={this.state.userId} />
