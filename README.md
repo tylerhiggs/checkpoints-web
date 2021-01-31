@@ -17,7 +17,7 @@ While many families have found Life 360 a platform that keeps their children saf
 
 Checkpoints 180 gives users a little more freedom, while still being useful and keeping users safe. Exact location data is inaccessible to any user. If a person wants to get off the radar for some free time, they just tell the rest of the family they are going to a location that is not listed as a checkpoint. But if someone says they will be at a checkpoint and is not, there is now a cause for concern and safety measures can now be made. With Checkpoints 180, users will not feel as if every move they make is being watched as if they were in 1984, but they will feel as if they can be safe when they want to and free when they want to. Family trust can be built by switching to this platform from Life 360.
 
-## Look at the iOS app!
+## Look at the app!
 
 ![](feed.png)
 
