@@ -39,3 +39,11 @@ Checkpoints 180 gives users a little more freedom, while still being useful and 
 
 - [geocod.io](https://www.geocod.io/)
 
+
+## Note
+
+To test on a local machine, run in separate terminals:
+
+- `npm start`
+- `npm run hotloader`
+
